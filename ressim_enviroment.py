@@ -3,10 +3,10 @@
 import numpy as np
 import functools
 
-import ressim as ressim
-import utils as utils
+import Ressim_Env.ressim as ressim
+import Ressim_Env.utils as utils
 from gym import spaces
-from spatial_expcov import batch_generate
+from Ressim_Env.spatial_expcov import batch_generate
 
 import matplotlib.pyplot as plt
 import csv
@@ -184,10 +184,9 @@ class resSimEnv_v1:
             self.k = np.exp(k[0])
 
         # RL parameters
-        high = np.array([1e5,1e5,1e5,1e5,1e5,1e5,1e5,1e5])
+        high = np.array([1e5,1e5,1e5])
         self.observation_space = spaces.Box(low=-high, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(int(action_steps)) # should be a perfect square number
-        self.q_delta = 0.2
 
         # Model definition
         self.mobi_fn = functools.partial(utils.quadratic_mobility, mu_w=self.mu_w, mu_o=self.mu_o, s_wir=self.s_wir, s_oir=self.s_oir)  # quadratic mobility model
@@ -226,7 +225,7 @@ class resSimEnv_v1:
         done = False
 
         # states are represented by values of sturation and pressure at producers and injectors
-        state = np.array( [ self.s_load[-1,-1], self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0], self.p_load[-1,-1], self.p_load[0,-1],self.p_load[-1,0],self.p_load[0,0] ] )
+        state = np.array( [ self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0] ] )
         return state, reward, done, {}
 
     def get_sw(self, x_ind, y_ind):
@@ -243,7 +242,7 @@ class resSimEnv_v1:
             k=batch_generate(nx=self.nx, ny=self.ny, length=1.0, sigma=1.0, lx=self.lx, ly=self.ly, sample_size=1)
             self.k = np.exp(k[0])
 
-        state = np.array( [ self.s_init[-1,-1], self.s_init[0,-1],self.s_init[-1,0],self.s_init[0,0], self.p_init[-1,-1], self.p_init[0,-1],self.p_init[-1,0],self.p_init[0,0] ] )
+        state = np.array( [ self.s_init[0,-1],self.s_init[-1,0],self.s_init[0,0]] )
         return state
 
     def render(self, episode, step):

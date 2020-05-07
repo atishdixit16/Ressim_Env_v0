@@ -42,7 +42,7 @@ from ressim_enviroment import resSimEnv_v0, resSimEnv_v1
 #     print('Episode: '+str(i+1)+', reward:'+str(round(cumR,1)))
 
 # solution for 100 step problem in ResSim-v1
-n_step_ = 50
+n_step_ = 10
 dt_ = 1e-3
 mu_w_ = 1.0
 mu_o_ = 2.0
@@ -54,7 +54,7 @@ phi_ = 0.1
 k_ = 1
 env = resSimEnv_v1(11,nx = nx_, ny=ny_, lx=lx_, ly=ly_ , n_steps=n_step_, dt=dt_, mu_w = mu_w_, mu_o = mu_o_, phi=phi_, k=k_)
 n_action = env.action_space.n
-N = 20
+N = 50
 best_actions, best_rewards = [], []
 for i in range(N):
     _ = env.reset()
@@ -74,7 +74,7 @@ for i in range(N):
 
 cum_reward = np.cumsum(best_rewards)
 output_table = np.stack((best_actions, best_rewards, cum_reward), axis=1)
-np.savetxt('test_ressim_v1.csv', output_table, delimiter=',', header='Best Action, Best Reward, Cumumulative Reward')
+np.savetxt('ressim_v1_10step.csv', output_table, delimiter=',', header='Best Action, Best Reward, Cummulative Reward')
 
 # data = np.loadtxt('Ressim_Env/test_ressim_v1.csv', delimiter=',', skiprows=1)
 # cum_reward = data[:,2]
