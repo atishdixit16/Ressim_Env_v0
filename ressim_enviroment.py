@@ -186,7 +186,7 @@ class resSimEnv_v1:
             self.k = np.exp(k[0])
 
         # RL parameters
-        high = np.array([1e5,1e5,1e5]self.state_seq_n)
+        high = np.array([1e5,1e5,1e5]*self.state_seq_n)
         self.observation_space = spaces.Box(low=-high, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(int(action_steps)) # should be a perfect square number
 
