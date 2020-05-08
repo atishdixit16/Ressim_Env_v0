@@ -229,7 +229,7 @@ class resSimEnv_v1:
             self.p_load = self.solverP.p
 
             if i+1 in state_indices:
-                state.extend( self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0] )
+                state.extend( [self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0]] )
             
             reward +=  -self.q[0,0] * (1 - self.s_load[0,0]) + -self.q[-1,0] * ( 1 - self.s_load[-1,0] ) 
 
