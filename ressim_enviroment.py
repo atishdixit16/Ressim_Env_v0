@@ -155,7 +155,8 @@ class resSimEnv_v1:
                 phi = 0.1,
                 dt = 5e-4,
                 n_steps = 1,
-                k_type='uniform'):
+                k_type='uniform',
+                state_seq_n=1):
 
         self.nx = nx
         self.ny = ny
@@ -173,6 +174,7 @@ class resSimEnv_v1:
         self.dt = dt  # timestep
         self.n_steps = n_steps
         self.k_type = k_type
+        self.state_seq_n = state_seq_n # has to be smaller than n_steps
 
         self.q = np.zeros(self.grid.shape)
         self.q[0,0]=-0.5 # producer 1 
@@ -184,7 +186,7 @@ class resSimEnv_v1:
             self.k = np.exp(k[0])
 
         # RL parameters
-        high = np.array([1e5,1e5,1e5])
+        high = np.array([1e5,1e5,1e5]self.state_seq_n)
         self.observation_space = spaces.Box(low=-high, high=high, dtype=np.float32)
         self.action_space = spaces.Discrete(int(action_steps)) # should be a perfect square number
 
@@ -209,8 +211,14 @@ class resSimEnv_v1:
         self.solverP = ressim.PressureEquation(self.grid, q=self.q, k=self.k, lamb_fn=self.lamb_fn)
         self.solverS = ressim.SaturationEquation(self.grid, q=self.q, phi=self.phi, s=self.s_load, f_fn=self.f_fn, df_fn=self.df_fn)
 
+        state_n_gap = int(self.n_steps/self.state_seq_n)
+        state_indices = []
+        for i in range(self.state_seq_n):
+            state_indices.append(self.n_steps-i*state_n_gap)
+        
+        state=[]
         reward = 0.0
-        for _ in range(self.n_steps):
+        for i in range(self.n_steps):
             self.solverP.s = self.s_load
             self.solverP.step()
             # solve saturation
@@ -219,13 +227,16 @@ class resSimEnv_v1:
 
             self.s_load = self.solverS.s
             self.p_load = self.solverP.p
+
+            if i+1 in state_indices:
+                state.extend( self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0] )
             
             reward +=  -self.q[0,0] * (1 - self.s_load[0,0]) + -self.q[-1,0] * ( 1 - self.s_load[-1,0] ) 
 
         done = False
 
         # states are represented by values of sturation and pressure at producers and injectors
-        state = np.array( [ self.s_load[0,-1],self.s_load[-1,0],self.s_load[0,0] ] )
+        state = np.array( state )
         return state, reward, done, {}
 
     def get_sw(self, x_ind, y_ind):
@@ -242,7 +253,7 @@ class resSimEnv_v1:
             k=batch_generate(nx=self.nx, ny=self.ny, length=1.0, sigma=1.0, lx=self.lx, ly=self.ly, sample_size=1)
             self.k = np.exp(k[0])
 
-        state = np.array( [ self.s_init[0,-1],self.s_init[-1,0],self.s_init[0,0]] )
+        state = np.array( [ self.s_init[0,-1],self.s_init[-1,0],self.s_init[0,0]]*self.state_seq_n )
         return state
 
     def render(self, episode, step):
